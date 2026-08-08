@@ -1,0 +1,18 @@
+export const ROUTES = {
+  LOGIN: '/login',
+  FORGOT_PASSWORD: '/forgot-password',
+  RESET_PASSWORD: '/reset-password',
+  
+  DASHBOARD: '/',
+  PRODUCTS: '/products',
+  INVENTORY: '/inventory',
+  PURCHASES: '/purchases',
+  SALES: '/sales',
+  CUSTOMERS: '/customers',
+  SUPPLIERS: '/suppliers',
+  EXPENSES: '/expenses',
+  REPORTS: '/reports',
+  SETTINGS: '/settings',
+  PROFILE: '/profile',
+  STAFF: '/staff',
+};
