@@ -19,8 +19,10 @@ export const useBarcodeScanner = ({ onSuccess, onTimeout }: UseBarcodeScannerPro
 
   const readerRef = useRef<BrowserMultiFormatReader | null>(null);
   const controlsRef = useRef<any | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const videoElementRef = useRef<HTMLVideoElement | null>(null);
   const timeoutIdRef = useRef<any | null>(null);
+  const hasScannedRef = useRef<boolean>(false);
 
   // Initialize ZXing Reader with supported formats for faster decoding
   const getReader = useCallback(() => {
@@ -39,7 +41,7 @@ export const useBarcodeScanner = ({ onSuccess, onTimeout }: UseBarcodeScannerPro
       timeoutIdRef.current = null;
     }
 
-    // Stop camera controls and release media stream
+    // Stop decoder controls
     if (controlsRef.current) {
       try {
         controlsRef.current.stop();
@@ -47,6 +49,16 @@ export const useBarcodeScanner = ({ onSuccess, onTimeout }: UseBarcodeScannerPro
         console.warn('Error stopping scanner controls:', err);
       }
       controlsRef.current = null;
+    }
+
+    // Release camera MediaStream tracks immediately
+    if (streamRef.current) {
+      try {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      } catch (err) {
+        console.warn('Error stopping stream tracks:', err);
+      }
+      streamRef.current = null;
     }
 
     setIsScanning(false);
@@ -62,6 +74,7 @@ export const useBarcodeScanner = ({ onSuccess, onTimeout }: UseBarcodeScannerPro
       setNoCamera(false);
       setTimeoutReached(false);
       videoElementRef.current = videoElement;
+      hasScannedRef.current = false; // Reset scan state flag
 
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         setError('Browser does not support camera access (MediaDevices API missing).');
@@ -70,72 +83,36 @@ export const useBarcodeScanner = ({ onSuccess, onTimeout }: UseBarcodeScannerPro
       }
 
       try {
+        // Configure getUserMedia constraints
+        // Prefer rear camera ("environment") if no specific device is chosen
+        const constraints: MediaStreamConstraints = {
+          video: deviceId
+            ? { deviceId: { exact: deviceId } }
+            : { facingMode: { ideal: 'environment' } },
+          audio: false,
+        };
+
+        // 1. Open the camera stream directly and bind it
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        streamRef.current = stream;
+        videoElement.srcObject = stream;
+
+        // 2. Decode from the active stream using ZXing
         const reader = getReader();
-
-        // Request a temporary stream to trigger permissions and populate labels
-        let tempStream: MediaStream | null = null;
-        try {
-          tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
-        } catch (permErr) {
-          console.warn('Initial permission request failed:', permErr);
-        }
-
-        // 1. Get devices list (with labels populated!)
-        let devices: MediaDeviceInfo[] = [];
-        try {
-          devices = await reader.listVideoInputDevices();
-          setCameraDevices(devices);
-        } catch (deviceErr) {
-          console.warn('Failed listing video input devices:', deviceErr);
-        }
-
-        // Close temporary stream tracks immediately
-        if (tempStream) {
-          try {
-            tempStream.getTracks().forEach((track) => track.stop());
-          } catch (trackErr) {
-            console.warn('Failed closing temp tracks:', trackErr);
-          }
-        }
-
-        if (devices.length === 0) {
-          setNoCamera(true);
-          setError('No camera was detected on this device.');
-          setLoading(false);
-          return;
-        }
-
-        // 2. Select active device id (prefer rear camera)
-        let targetDeviceId = deviceId || activeDeviceId;
-        if (!targetDeviceId && devices.length > 0) {
-          const rear = devices.find((d) => {
-            const label = d.label.toLowerCase();
-            return label.includes('back') || label.includes('rear') || label.includes('environment');
-          });
-          targetDeviceId = rear ? rear.deviceId : devices[0].deviceId;
-        } else if (!targetDeviceId) {
-          targetDeviceId = devices[0].deviceId;
-        }
-
-        setActiveDeviceId(targetDeviceId);
-
-        // 3. Start decoding from video device
-        const controls = await reader.decodeFromVideoDevice(
-          targetDeviceId,
+        const controls = await reader.decodeFromStream(
+          stream,
           videoElement,
           (result, _err) => {
-            if (result) {
+            if (result && !hasScannedRef.current) {
               const text = result.getText();
               const format = result.getBarcodeFormat();
 
-              // Verify the decoded format is supported
               if (SUPPORTED_BARCODE_FORMATS.includes(format)) {
-                // Stop scanning and trigger success callback
+                hasScannedRef.current = true; // Set flag to block subsequent frames
                 stopScan();
                 onSuccess(text);
               }
             }
-            // Ignore normal non-match framing errors from ZXing library
           }
         );
 
@@ -143,7 +120,27 @@ export const useBarcodeScanner = ({ onSuccess, onTimeout }: UseBarcodeScannerPro
         setIsScanning(true);
         setLoading(false);
 
-        // 4. Start 30-second timeout timer
+        // 3. Update active device selection state from current track settings
+        const videoTracks = stream.getVideoTracks();
+        if (videoTracks.length > 0) {
+          const settings = videoTracks[0].getSettings();
+          if (settings.deviceId) {
+            setActiveDeviceId(settings.deviceId);
+          }
+        }
+
+        // 4. Fetch the full list of cameras in the background to populate UI dropdown
+        try {
+          const devices = await reader.listVideoInputDevices();
+          setCameraDevices(devices);
+          if (devices.length === 0) {
+            setNoCamera(true);
+          }
+        } catch (deviceErr) {
+          console.warn('Failed listing camera devices in background:', deviceErr);
+        }
+
+        // 5. Start 30-second scan timeout timer
         timeoutIdRef.current = setTimeout(() => {
           stopScan();
           setTimeoutReached(true);
