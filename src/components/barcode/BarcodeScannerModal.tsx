@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -54,7 +54,8 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
   onClose,
   onScanSuccess,
 }) => {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const videoElementRef = useRef<HTMLVideoElement | null>(null);
+  const startTimerRef = useRef<any>(null);
 
   const handleSuccess = (text: string) => {
     // 1. Synth Beep Sound
@@ -89,24 +90,37 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
     onSuccess: handleSuccess,
   });
 
-  // Start scanning when dialog opens and videoRef is bound
-  useEffect(() => {
-    if (open && videoRef.current) {
-      // Delay slightly to allow dialog rendering transition
-      const timer = setTimeout(() => {
-        if (videoRef.current) {
-          startScan(videoRef.current);
+  const videoRefCallback = useCallback((node: HTMLVideoElement | null) => {
+    if (startTimerRef.current) {
+      clearTimeout(startTimerRef.current);
+      startTimerRef.current = null;
+    }
+
+    if (node) {
+      videoElementRef.current = node;
+      startTimerRef.current = setTimeout(() => {
+        if (videoElementRef.current === node) {
+          startScan(node);
         }
       }, 300);
-      return () => clearTimeout(timer);
-    } else if (!open) {
+    } else {
+      videoElementRef.current = null;
       stopScan();
     }
-  }, [open, startScan, stopScan]);
+  }, [startScan, stopScan]);
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (startTimerRef.current) {
+        clearTimeout(startTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleRetry = () => {
-    if (videoRef.current) {
-      startScan(videoRef.current);
+    if (videoElementRef.current) {
+      startScan(videoElementRef.current);
     }
   };
 
@@ -216,10 +230,11 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
 
         {/* Live Camera Feed */}
         <video
-          ref={videoRef}
+          ref={videoRefCallback}
           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           playsInline
           muted
+          autoPlay
         />
 
         {/* Laser Overlay Box */}
