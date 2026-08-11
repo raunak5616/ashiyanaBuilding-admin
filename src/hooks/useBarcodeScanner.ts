@@ -72,13 +72,30 @@ export const useBarcodeScanner = ({ onSuccess, onTimeout }: UseBarcodeScannerPro
       try {
         const reader = getReader();
 
-        // 1. Get devices list
+        // Request a temporary stream to trigger permissions and populate labels
+        let tempStream: MediaStream | null = null;
+        try {
+          tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        } catch (permErr) {
+          console.warn('Initial permission request failed:', permErr);
+        }
+
+        // 1. Get devices list (with labels populated!)
         let devices: MediaDeviceInfo[] = [];
         try {
           devices = await reader.listVideoInputDevices();
           setCameraDevices(devices);
         } catch (deviceErr) {
           console.warn('Failed listing video input devices:', deviceErr);
+        }
+
+        // Close temporary stream tracks immediately
+        if (tempStream) {
+          try {
+            tempStream.getTracks().forEach((track) => track.stop());
+          } catch (trackErr) {
+            console.warn('Failed closing temp tracks:', trackErr);
+          }
         }
 
         if (devices.length === 0) {
@@ -88,8 +105,18 @@ export const useBarcodeScanner = ({ onSuccess, onTimeout }: UseBarcodeScannerPro
           return;
         }
 
-        // 2. Select active device id
-        const targetDeviceId = deviceId || activeDeviceId || devices[0].deviceId;
+        // 2. Select active device id (prefer rear camera)
+        let targetDeviceId = deviceId || activeDeviceId;
+        if (!targetDeviceId && devices.length > 0) {
+          const rear = devices.find((d) => {
+            const label = d.label.toLowerCase();
+            return label.includes('back') || label.includes('rear') || label.includes('environment');
+          });
+          targetDeviceId = rear ? rear.deviceId : devices[0].deviceId;
+        } else if (!targetDeviceId) {
+          targetDeviceId = devices[0].deviceId;
+        }
+
         setActiveDeviceId(targetDeviceId);
 
         // 3. Start decoding from video device

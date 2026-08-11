@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -54,8 +54,7 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
   onClose,
   onScanSuccess,
 }) => {
-  const videoElementRef = useRef<HTMLVideoElement | null>(null);
-  const startTimerRef = useRef<any>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const handleSuccess = (text: string) => {
     // 1. Synth Beep Sound
@@ -90,37 +89,34 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
     onSuccess: handleSuccess,
   });
 
-  const videoRefCallback = useCallback((node: HTMLVideoElement | null) => {
-    if (startTimerRef.current) {
-      clearTimeout(startTimerRef.current);
-      startTimerRef.current = null;
-    }
+  // Start scanning when dialog opens and videoRef is bound
+  useEffect(() => {
+    let active = true;
+    let timer: any = null;
 
-    if (node) {
-      videoElementRef.current = node;
-      startTimerRef.current = setTimeout(() => {
-        if (videoElementRef.current === node) {
-          startScan(node);
+    if (open) {
+      // Delay slightly to allow dialog rendering transition
+      timer = setTimeout(() => {
+        if (active && videoRef.current) {
+          startScan(videoRef.current);
         }
-      }, 300);
+      }, 350);
     } else {
-      videoElementRef.current = null;
       stopScan();
     }
-  }, [startScan, stopScan]);
 
-  // Clean up timer on unmount
-  useEffect(() => {
     return () => {
-      if (startTimerRef.current) {
-        clearTimeout(startTimerRef.current);
-      }
+      active = false;
+      if (timer) clearTimeout(timer);
+      stopScan();
     };
-  }, []);
+    // Only run when open state changes to avoid infinite loop renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const handleRetry = () => {
-    if (videoElementRef.current) {
-      startScan(videoElementRef.current);
+    if (videoRef.current) {
+      startScan(videoRef.current);
     }
   };
 
@@ -230,7 +226,7 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
 
         {/* Live Camera Feed */}
         <video
-          ref={videoRefCallback}
+          ref={videoRef}
           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           playsInline
           muted
