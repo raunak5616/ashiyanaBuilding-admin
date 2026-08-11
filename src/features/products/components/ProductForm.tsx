@@ -26,6 +26,9 @@ import FormHelperText from '@mui/material/FormHelperText';
 import IconButton from '@mui/material/IconButton';
 import AddIcon from '@mui/icons-material/Add';
 import Alert from '@mui/material/Alert';
+import CropFreeIcon from '@mui/icons-material/CropFree';
+import Snackbar from '@mui/material/Snackbar';
+import BarcodeScannerModal from '@/components/barcode/BarcodeScannerModal';
 
 // Zod Validation Schema
 const productSchema = z.object({
@@ -72,6 +75,23 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [brandOpen, setBrandOpen] = useState(false);
   const [unitOpen, setUnitOpen] = useState(false);
+
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [toastOpen, setToastOpen] = useState(false);
+
+  const handleScanSuccess = (barcode: string) => {
+    setValue('barcode', barcode, { shouldValidate: true, shouldDirty: true });
+    setScannerOpen(false);
+    setToastOpen(true);
+
+    // Focus the next form field automatically (Purchase Price input field)
+    setTimeout(() => {
+      const nextField = document.getElementById('purchase-price');
+      if (nextField) {
+        nextField.focus();
+      }
+    }, 150);
+  };
 
   // Queries for selectors
   const { data: categoriesResponse } = useGetCategoriesQuery({ isActive: true });
@@ -181,13 +201,36 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               {...register('sku')}
             />
 
-            <FormInput
-              label="Barcode"
-              placeholder="e.g. 8901234567890"
-              disabled={loading}
-              error={errors.barcode?.message}
-              {...register('barcode')}
-            />
+            <div className="flex flex-col gap-1.5 w-full">
+              <div className="flex justify-between items-center select-none">
+                <label className="text-xs font-bold uppercase tracking-wider font-sans text-slate-500">
+                  Barcode
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setScannerOpen(true)}
+                  disabled={loading}
+                  className="text-xs font-bold text-primary hover:text-primary/80 select-none flex items-center gap-1 focus:outline-none disabled:opacity-50 cursor-pointer"
+                >
+                  <CropFreeIcon className="!h-3.5 !w-3.5" />
+                  <span>Scan Barcode</span>
+                </button>
+              </div>
+              <input
+                type="text"
+                placeholder="e.g. 8901234567890"
+                disabled={loading}
+                className={`w-full px-4 py-2.5 text-sm border rounded-xl font-sans focus:outline-none focus:ring-1 transition-all duration-200 bg-slate-50 border-slate-200/80 text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:ring-slate-400 ${
+                  errors.barcode ? '!border-rose-500 focus:!ring-rose-500' : ''
+                }`}
+                {...register('barcode')}
+              />
+              {errors.barcode && (
+                <p className="text-xs font-semibold text-rose-500 font-sans mt-0.5 select-none animate-in fade-in slide-in-from-top-1 duration-150">
+                  {errors.barcode.message}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Classification selects with quick-add buttons */}
@@ -331,6 +374,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <FormInput
+              id="purchase-price"
               label="Purchase Price (₹)"
               type="number"
               step="0.01"
@@ -441,6 +485,27 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           onSuccess={(newId) => setValue('unitId', newId)}
         />
       )}
+
+      {/* Barcode Scanner Modal */}
+      {scannerOpen && (
+        <BarcodeScannerModal
+          open={scannerOpen}
+          onClose={() => setScannerOpen(false)}
+          onScanSuccess={handleScanSuccess}
+        />
+      )}
+
+      {/* Success Toast */}
+      <Snackbar
+        open={toastOpen}
+        autoHideDuration={4000}
+        onClose={() => setToastOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert severity="success" onClose={() => setToastOpen(false)} className="!rounded-xl shadow-lg !text-xs">
+          Barcode scanned successfully.
+        </Alert>
+      </Snackbar>
     </form>
   );
 };
