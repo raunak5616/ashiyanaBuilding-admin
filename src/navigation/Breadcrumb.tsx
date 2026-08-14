@@ -16,6 +16,7 @@ const ROUTE_NAMES: Record<string, string> = {
   [ROUTES.REPORTS]: 'Reports',
   [ROUTES.SETTINGS]: 'Settings',
   [ROUTES.PROFILE]: 'My Profile',
+  [ROUTES.ORDERS]: 'Live Orders',
 };
 
 export const Breadcrumb: React.FC = () => {

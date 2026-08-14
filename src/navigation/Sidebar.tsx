@@ -13,6 +13,7 @@ import StorefrontIcon from '@mui/icons-material/StorefrontOutlined';
 import WarehouseIcon from '@mui/icons-material/WarehouseOutlined';
 import LocalShippingIcon from '@mui/icons-material/LocalShippingOutlined';
 import ReceiptIcon from '@mui/icons-material/ReceiptLongOutlined';
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBagOutlined';
 import PeopleIcon from '@mui/icons-material/PeopleAltOutlined';
 import BusinessIcon from '@mui/icons-material/BusinessOutlined';
 import WalletIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
@@ -44,6 +45,7 @@ export const Sidebar: React.FC = () => {
     { name: 'Dashboard', path: ROUTES.DASHBOARD, icon: DashboardIcon, permission: 'dashboard:read' },
     { name: 'Products', path: ROUTES.PRODUCTS, icon: StorefrontIcon, permission: 'products:read' },
     { name: 'Inventory', path: ROUTES.INVENTORY, icon: WarehouseIcon, permission: 'inventory:read' },
+    { name: 'Live Orders', path: ROUTES.ORDERS, icon: ShoppingBagIcon, permission: 'sales:read' },
     { name: 'Purchases', path: ROUTES.PURCHASES, icon: LocalShippingIcon, permission: 'purchases:read' },
     { name: 'Sales POS', path: ROUTES.SALES, icon: ReceiptIcon, permission: 'sales:create' },
     { name: 'Customers', path: ROUTES.CUSTOMERS, icon: PeopleIcon, permission: 'customers:read' },

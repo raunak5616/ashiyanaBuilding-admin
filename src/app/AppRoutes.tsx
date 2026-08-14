@@ -35,6 +35,7 @@ import ExpenseListScreen from '@/features/expenses/screens/ExpenseListScreen';
 import ReportsScreen from '@/features/reports/screens/ReportsScreen';
 import SettingsPage from '@/features/settings/SettingsPage';
 import ProfilePage from '@/features/profile/ProfilePage';
+import OrderListScreen from '@/features/orders/screens/OrderListScreen';
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -109,6 +110,14 @@ export const AppRoutes: React.FC = () => {
           element={
             <ProtectedRoutes requiredPermission="purchases:read">
               <PurchaseDetailsScreen />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path={ROUTES.ORDERS}
+          element={
+            <ProtectedRoutes requiredPermission="sales:read">
+              <OrderListScreen />
             </ProtectedRoutes>
           }
         />

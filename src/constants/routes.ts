@@ -15,4 +15,5 @@ export const ROUTES = {
   SETTINGS: '/settings',
   PROFILE: '/profile',
   STAFF: '/staff',
+  ORDERS: '/orders',
 };
