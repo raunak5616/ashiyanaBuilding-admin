@@ -142,7 +142,7 @@ export const OrderListScreen: React.FC = () => {
         await deliverOrder(orderId).unwrap();
       }
       // If modal is open, refresh detail info
-      if (selectedOrder && selectedOrder.id === orderId) {
+      if (selectedOrder && (selectedOrder._id || selectedOrder.id) === orderId) {
         handleCloseDetails();
       }
     } catch (err: any) {
@@ -243,9 +243,10 @@ export const OrderListScreen: React.FC = () => {
                 ) : (
                   orders.map((order) => {
                     const totalQty = order.items.reduce((sum, item) => sum + item.quantity, 0);
+                    const orderId = order._id || order.id;
 
                     return (
-                      <TableRow key={order.id} className="hover:bg-slate-50/50">
+                      <TableRow key={orderId} className="hover:bg-slate-50/50">
                         <TableCell className="!font-bold !text-xs !text-slate-800 !font-sans">
                           {order.orderNumber}
                         </TableCell>
@@ -285,7 +286,7 @@ export const OrderListScreen: React.FC = () => {
                                 <IconButton
                                   size="small"
                                   disabled={order.paymentMethod === 'online' && order.paymentStatus !== 'paid'}
-                                  onClick={() => handleAction('approve', order.id)}
+                                  onClick={() => handleAction('approve', orderId)}
                                   title={order.paymentMethod === 'online' && order.paymentStatus !== 'paid' ? "Waiting for online payment" : "Approve Order"}
                                   className="hover:bg-emerald-50 text-emerald-600 disabled:text-slate-300 disabled:hover:bg-transparent"
                                 >
@@ -293,7 +294,7 @@ export const OrderListScreen: React.FC = () => {
                                 </IconButton>
                                 <IconButton
                                   size="small"
-                                  onClick={() => handleAction('reject', order.id)}
+                                  onClick={() => handleAction('reject', orderId)}
                                   title="Reject Order"
                                   className="hover:bg-rose-50 text-rose-600"
                                 >
@@ -305,7 +306,7 @@ export const OrderListScreen: React.FC = () => {
                             {order.status === 'approved' && (
                               <IconButton
                                 size="small"
-                                onClick={() => handleAction('dispatch', order.id)}
+                                onClick={() => handleAction('dispatch', orderId)}
                                 title="Dispatch Order"
                                 className="hover:bg-orange-50 text-orange-600"
                               >
@@ -316,7 +317,7 @@ export const OrderListScreen: React.FC = () => {
                             {order.status === 'dispatched' && (
                               <IconButton
                                 size="small"
-                                onClick={() => handleAction('deliver', order.id)}
+                                onClick={() => handleAction('deliver', orderId)}
                                 title="Mark Delivered"
                                 className="hover:bg-emerald-50 text-emerald-600"
                               >
@@ -464,7 +465,7 @@ export const OrderListScreen: React.FC = () => {
                     variant="contained"
                     startIcon={<DoneIcon />}
                     disabled={selectedOrder.paymentMethod === 'online' && selectedOrder.paymentStatus !== 'paid'}
-                    onClick={() => handleAction('approve', selectedOrder.id)}
+                    onClick={() => handleAction('approve', selectedOrder._id || selectedOrder.id)}
                     className="!bg-emerald-600 !text-white !text-xs !py-1.5 !px-4 !rounded-xl !font-bold disabled:!bg-slate-200 disabled:!text-slate-400"
                   >
                     {selectedOrder.paymentMethod === 'online' && selectedOrder.paymentStatus !== 'paid' ? 'Awaiting Payment' : 'Approve'}
@@ -473,7 +474,7 @@ export const OrderListScreen: React.FC = () => {
                     variant="contained"
                     color="error"
                     startIcon={<CloseIcon />}
-                    onClick={() => handleAction('reject', selectedOrder.id)}
+                    onClick={() => handleAction('reject', selectedOrder._id || selectedOrder.id)}
                     className="!text-white !text-xs !py-1.5 !px-4 !rounded-xl !font-bold"
                   >
                     Reject
@@ -485,7 +486,7 @@ export const OrderListScreen: React.FC = () => {
                 <Button
                   variant="contained"
                   startIcon={<LocalShippingIcon />}
-                  onClick={() => handleAction('dispatch', selectedOrder.id)}
+                  onClick={() => handleAction('dispatch', selectedOrder._id || selectedOrder.id)}
                   className="!bg-orange-600 !text-white !text-xs !py-1.5 !px-4 !rounded-xl !font-bold"
                 >
                   Dispatch
@@ -496,7 +497,7 @@ export const OrderListScreen: React.FC = () => {
                 <Button
                   variant="contained"
                   startIcon={<CheckCircleIcon />}
-                  onClick={() => handleAction('deliver', selectedOrder.id)}
+                  onClick={() => handleAction('deliver', selectedOrder._id || selectedOrder.id)}
                   className="!bg-emerald-600 !text-white !text-xs !py-1.5 !px-4 !rounded-xl !font-bold"
                 >
                   Mark Delivered
