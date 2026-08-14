@@ -284,9 +284,10 @@ export const OrderListScreen: React.FC = () => {
                               <>
                                 <IconButton
                                   size="small"
+                                  disabled={order.paymentMethod === 'online' && order.paymentStatus !== 'paid'}
                                   onClick={() => handleAction('approve', order.id)}
-                                  title="Approve Order"
-                                  className="hover:bg-emerald-50 text-emerald-600"
+                                  title={order.paymentMethod === 'online' && order.paymentStatus !== 'paid' ? "Waiting for online payment" : "Approve Order"}
+                                  className="hover:bg-emerald-50 text-emerald-600 disabled:text-slate-300 disabled:hover:bg-transparent"
                                 >
                                   <DoneIcon className="h-4.5 w-4.5" />
                                 </IconButton>
@@ -462,10 +463,11 @@ export const OrderListScreen: React.FC = () => {
                   <Button
                     variant="contained"
                     startIcon={<DoneIcon />}
+                    disabled={selectedOrder.paymentMethod === 'online' && selectedOrder.paymentStatus !== 'paid'}
                     onClick={() => handleAction('approve', selectedOrder.id)}
-                    className="!bg-emerald-600 !text-white !text-xs !py-1.5 !px-4 !rounded-xl !font-bold"
+                    className="!bg-emerald-600 !text-white !text-xs !py-1.5 !px-4 !rounded-xl !font-bold disabled:!bg-slate-200 disabled:!text-slate-400"
                   >
-                    Approve
+                    {selectedOrder.paymentMethod === 'online' && selectedOrder.paymentStatus !== 'paid' ? 'Awaiting Payment' : 'Approve'}
                   </Button>
                   <Button
                     variant="contained"
