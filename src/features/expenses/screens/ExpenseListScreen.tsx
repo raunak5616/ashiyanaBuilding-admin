@@ -187,12 +187,12 @@ export const ExpenseListScreen: React.FC = () => {
           <h1 className="text-xl font-black text-secondary">Expenses Tracker</h1>
           <p className="text-xs text-slate-400 mt-1">Manage shop operational expenses and view financial KPIs.</p>
         </div>
-        <div className="flex gap-3 w-full sm:w-auto items-center">
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <Button
             onClick={() => setCategoryDialogOpen(true)}
             variant="outlined"
             startIcon={<CategoryIcon />}
-            className="rounded-xl border-slate-200 text-slate-600 capitalize hover:bg-slate-50 min-h-[42px] shrink-0"
+            className="rounded-xl border-slate-200 text-slate-600 capitalize hover:bg-slate-50 min-h-[42px] w-full sm:w-auto"
           >
             Categories
           </Button>
@@ -201,7 +201,7 @@ export const ExpenseListScreen: React.FC = () => {
             disabled={isLoading || isFetching}
             variant="outlined"
             startIcon={<RefreshIcon />}
-            className="rounded-xl border-slate-200 text-slate-600 capitalize hover:bg-slate-50 min-h-[42px] shrink-0"
+            className="rounded-xl border-slate-200 text-slate-600 capitalize hover:bg-slate-50 min-h-[42px] w-full sm:w-auto"
           >
             {isFetching ? <CircularProgress size={18} className="text-slate-400" /> : 'Refresh'}
           </Button>
@@ -210,7 +210,7 @@ export const ExpenseListScreen: React.FC = () => {
             variant="contained"
             disableElevation
             startIcon={<AddIcon />}
-            className="rounded-xl bg-slate-900 text-white hover:bg-slate-800 capitalize text-xs font-semibold px-4 min-h-[42px] shrink-0"
+            className="rounded-xl bg-slate-900 text-white hover:bg-slate-800 capitalize text-xs font-semibold px-4 min-h-[42px] w-full sm:w-auto"
           >
             Add Expense
           </Button>

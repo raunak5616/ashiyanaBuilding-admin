@@ -22,6 +22,7 @@ export interface Customer {
   creditLimit?: number; // in paise
   isActive: boolean;
   createdBy?: string | null;
+  hasAppAccount?: boolean;
   createdAt: string;
   updatedAt: string;
 }

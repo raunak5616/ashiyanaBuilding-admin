@@ -183,13 +183,13 @@ export const SaleListScreen: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex gap-3 w-full sm:w-auto items-center">
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <Button
             onClick={refetch}
             disabled={isLoading || isFetching}
             variant="outlined"
             startIcon={<RefreshIcon />}
-            className="rounded-xl border-slate-200 text-slate-600 capitalize font-sans hover:bg-slate-50 min-h-[42px] shrink-0"
+            className="rounded-xl border-slate-200 text-slate-600 capitalize font-sans hover:bg-slate-50 min-h-[42px] w-full sm:w-auto"
           >
             {isFetching ? <CircularProgress size={18} className="text-slate-400" /> : 'Refresh'}
           </Button>
@@ -199,7 +199,7 @@ export const SaleListScreen: React.FC = () => {
             variant="contained"
             disableElevation
             startIcon={<AddIcon />}
-            className="rounded-xl bg-slate-900 text-white hover:bg-slate-800 capitalize font-sans text-xs font-semibold px-4 min-h-[42px] w-full sm:w-auto shrink-0"
+            className="rounded-xl bg-slate-900 text-white hover:bg-slate-800 capitalize font-sans text-xs font-semibold px-4 min-h-[42px] w-full sm:w-auto"
           >
             New Sale Invoice
           </Button>

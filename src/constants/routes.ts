@@ -16,4 +16,5 @@ export const ROUTES = {
   PROFILE: '/profile',
   STAFF: '/staff',
   ORDERS: '/orders',
+  SLIDES: '/slides',
 };

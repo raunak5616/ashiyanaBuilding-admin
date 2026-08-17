@@ -146,7 +146,14 @@ export const CustomerListScreen: React.FC = () => {
             <PersonIcon className="h-5 w-5 text-slate-500" />
           </div>
           <div>
-            <p className="font-bold text-slate-800 text-sm leading-tight">{row.customerName}</p>
+            <div className="flex items-center gap-1.5">
+              <p className="font-bold text-slate-800 text-sm leading-tight">{row.customerName}</p>
+              {row.hasAppAccount && (
+                <span className="text-[9px] font-sans font-black bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded-md border border-emerald-200/80 uppercase tracking-wide shrink-0">
+                  App User
+                </span>
+              )}
+            </div>
             {row.customerType === 'business' && row.businessName && (
               <p className="text-xs text-slate-500 font-sans leading-tight mt-0.5">
                 Trade: {row.businessName}
@@ -203,7 +210,7 @@ export const CustomerListScreen: React.FC = () => {
       render: (row: Customer) => (
         <StatusChip
           status={row.isActive ? 'success' : 'error'}
-          label={row.isActive ? 'Active' : 'Archived'}
+          label={row.isActive ? 'Active' : 'Blocked'}
         />
       ),
     },
@@ -238,13 +245,13 @@ export const CustomerListScreen: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex gap-3 w-full sm:w-auto items-center">
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <Button
             onClick={refetch}
             disabled={isLoading || isFetching}
             variant="outlined"
             startIcon={<RefreshIcon />}
-            className="rounded-xl border-slate-200 text-slate-600 capitalize font-sans hover:bg-slate-50 min-h-[42px] shrink-0"
+            className="rounded-xl border-slate-200 text-slate-600 capitalize font-sans hover:bg-slate-50 min-h-[42px] w-full sm:w-auto"
           >
             {isFetching ? <CircularProgress size={18} className="text-slate-400" /> : 'Refresh'}
           </Button>
@@ -257,7 +264,7 @@ export const CustomerListScreen: React.FC = () => {
             variant="contained"
             disableElevation
             startIcon={<AddIcon />}
-            className="rounded-xl bg-slate-900 text-white hover:bg-slate-800 capitalize font-sans text-xs font-semibold px-4 min-h-[42px] w-full sm:w-auto shrink-0"
+            className="rounded-xl bg-slate-900 text-white hover:bg-slate-800 capitalize font-sans text-xs font-semibold px-4 min-h-[42px] w-full sm:w-auto"
           >
             Add Customer
           </Button>
@@ -316,7 +323,7 @@ export const CustomerListScreen: React.FC = () => {
               >
                 <MenuItem value="all" className="!text-xs !font-sans font-medium">All Status</MenuItem>
                 <MenuItem value="active" className="!text-xs !font-sans text-emerald-600 font-semibold">Active Only</MenuItem>
-                <MenuItem value="archived" className="!text-xs !font-sans text-rose-500 font-semibold">Archived Only</MenuItem>
+                <MenuItem value="archived" className="!text-xs !font-sans text-rose-500 font-semibold">Blocked Only</MenuItem>
               </Select>
             </div>
           </div>
@@ -366,7 +373,7 @@ export const CustomerListScreen: React.FC = () => {
             className="!text-xs !font-sans !py-2 !gap-2.5 !text-rose-600 hover:!bg-rose-50/50"
           >
             <BlockIcon className="h-4 w-4 text-rose-400 shrink-0" />
-            Archive Customer
+            Block Customer
           </MenuItem>
         ) : (
           <MenuItem
@@ -374,7 +381,7 @@ export const CustomerListScreen: React.FC = () => {
             className="!text-xs !font-sans !py-2 !gap-2.5 !text-emerald-600 hover:!bg-emerald-50/50"
           >
             <CheckCircleIcon className="h-4 w-4 text-emerald-400 shrink-0" />
-            Restore Customer
+            Unblock Customer
           </MenuItem>
         )}
       </Menu>
@@ -395,9 +402,9 @@ export const CustomerListScreen: React.FC = () => {
       {archiveConfirmOpen && customerToAction && (
         <ConfirmDialog
           open={archiveConfirmOpen}
-          title="Archive Customer Profile?"
-          message={`Are you sure you want to archive "${customerToAction.customerName}"? Archived customer records cannot be associated with new invoices, but historical records will remain intact.`}
-          confirmText="Archive"
+          title="Block Customer Profile?"
+          message={`Are you sure you want to block "${customerToAction.customerName}"? Blocked customers cannot log in to the mobile application or be associated with new invoices.`}
+          confirmText="Block"
           onConfirm={handleArchive}
           onClose={() => {
             setArchiveConfirmOpen(false);
@@ -411,9 +418,9 @@ export const CustomerListScreen: React.FC = () => {
       {restoreConfirmOpen && customerToAction && (
         <ConfirmDialog
           open={restoreConfirmOpen}
-          title="Restore Customer Profile?"
-          message={`Are you sure you want to restore "${customerToAction.customerName}"? This will allow creating new register invoices for this customer immediately.`}
-          confirmText="Restore"
+          title="Unblock Customer Profile?"
+          message={`Are you sure you want to unblock "${customerToAction.customerName}"? This will allow them to log in to the mobile application and create new invoices immediately.`}
+          confirmText="Unblock"
           onConfirm={handleRestore}
           onClose={() => {
             setRestoreConfirmOpen(false);

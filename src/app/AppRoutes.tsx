@@ -36,6 +36,7 @@ import ReportsScreen from '@/features/reports/screens/ReportsScreen';
 import SettingsPage from '@/features/settings/SettingsPage';
 import ProfilePage from '@/features/profile/ProfilePage';
 import OrderListScreen from '@/features/orders/screens/OrderListScreen';
+import SlideManagementScreen from '@/features/slides/screens/SlideManagementScreen';
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -190,6 +191,14 @@ export const AppRoutes: React.FC = () => {
           element={
             <ProtectedRoutes requiredPermission="settings:read">
               <SettingsPage />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path={ROUTES.SLIDES}
+          element={
+            <ProtectedRoutes requiredPermission="products:update">
+              <SlideManagementScreen />
             </ProtectedRoutes>
           }
         />

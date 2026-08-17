@@ -20,6 +20,7 @@ import WalletIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import AssessmentIcon from '@mui/icons-material/AssessmentOutlined';
 import SettingsIcon from '@mui/icons-material/SettingsOutlined';
 import BadgeIcon from '@mui/icons-material/BadgeOutlined';
+import SlideshowIcon from '@mui/icons-material/SlideshowOutlined';
 import AccountCircleIcon from '@mui/icons-material/AccountCircleOutlined';
 import LogoutIcon from '@mui/icons-material/LogoutOutlined';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -52,6 +53,7 @@ export const Sidebar: React.FC = () => {
     { name: 'Suppliers', path: ROUTES.SUPPLIERS, icon: BusinessIcon, permission: 'suppliers:read' },
     { name: 'Expenses', path: ROUTES.EXPENSES, icon: WalletIcon, permission: 'expenses:read' },
     { name: 'Reports', path: ROUTES.REPORTS, icon: AssessmentIcon, permission: 'reports:view' },
+    { name: 'Promos / Slides', path: ROUTES.SLIDES, icon: SlideshowIcon, permission: 'products:update' },
     { name: 'Staff', path: ROUTES.STAFF, icon: BadgeIcon, permission: 'users:read' },
     { name: 'Settings', path: ROUTES.SETTINGS, icon: SettingsIcon, permission: 'settings:read' },
   ];
