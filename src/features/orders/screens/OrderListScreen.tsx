@@ -258,8 +258,20 @@ export const OrderListScreen: React.FC = () => {
                           {totalQty} {totalQty === 1 ? 'item' : 'items'}
                         </TableCell>
                         <TableCell className="!text-xs !font-sans">
-                          <div className="capitalize font-bold text-slate-700">{order.paymentMethod}</div>
-                          <div className="mt-0.5">{getPaymentStatusChip(order.paymentStatus)}</div>
+                          <div className="capitalize font-bold text-slate-700">
+                            {order.walletAmountUsed && order.walletAmountUsed > 0
+                              ? `Wallet + ${order.paymentMethod === 'cash' ? 'COD' : 'Online'}`
+                              : order.paymentMethod === 'cash'
+                              ? 'Cash on Delivery'
+                              : 'Online Payment'}
+                          </div>
+                          {order.walletAmountUsed && order.walletAmountUsed > 0 ? (
+                            <div className="text-[10px] text-slate-500 mt-0.5">
+                              <div>Wallet applied: -{formatPrice(order.walletAmountUsed)}</div>
+                              <div>Remaining: {formatPrice(order.grandTotal - order.walletAmountUsed)}</div>
+                            </div>
+                          ) : null}
+                          <div className="mt-1">{getPaymentStatusChip(order.paymentStatus)}</div>
                         </TableCell>
                         <TableCell className="!font-bold !text-xs !text-slate-900 !font-sans">
                           {formatPrice(order.grandTotal)}
@@ -372,9 +384,19 @@ export const OrderListScreen: React.FC = () => {
                 <Typography className="!text-[10px] !font-bold text-slate-400 uppercase tracking-wide">
                   Payment info
                 </Typography>
-                <Typography className="!text-xs !font-bold text-slate-800 font-sans mt-0.5 capitalize">
-                  {selectedOrder.paymentMethod} Payment
+                <Typography className="!text-xs !font-bold text-slate-800 font-sans mt-0.5">
+                  {selectedOrder.walletAmountUsed && selectedOrder.walletAmountUsed > 0
+                    ? `Wallet + ${selectedOrder.paymentMethod === 'cash' ? 'COD' : 'Online'}`
+                    : selectedOrder.paymentMethod === 'cash'
+                    ? 'Cash on Delivery'
+                    : 'Online Payment'}
                 </Typography>
+                {selectedOrder.walletAmountUsed && selectedOrder.walletAmountUsed > 0 && (
+                  <Typography className="!text-[11px] text-slate-500 font-sans mt-0.5">
+                    Wallet Applied: -{formatPrice(selectedOrder.walletAmountUsed)}{'\n'}
+                    Remaining: {formatPrice(selectedOrder.grandTotal - selectedOrder.walletAmountUsed)}
+                  </Typography>
+                )}
                 <div className="mt-1">{getPaymentStatusChip(selectedOrder.paymentStatus)}</div>
               </div>
             </div>
@@ -429,19 +451,42 @@ export const OrderListScreen: React.FC = () => {
 
             {/* Total pricing details */}
             <div className="flex justify-end pt-2">
-              <div className="w-64 space-y-2 text-right">
+              <div className="w-72 space-y-2 text-right">
                 <div className="flex justify-between text-xs text-slate-500">
                   <span>Subtotal:</span>
                   <span className="font-semibold text-slate-700">{formatPrice(selectedOrder.subtotal)}</span>
                 </div>
+                {selectedOrder.discount > 0 && (
+                  <div className="flex justify-between text-xs text-emerald-600">
+                    <span>Discount:</span>
+                    <span className="font-semibold">-{formatPrice(selectedOrder.discount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-xs text-slate-500">
                   <span>GST (18%):</span>
                   <span className="font-semibold text-slate-700">{formatPrice(selectedOrder.tax)}</span>
                 </div>
-                <div className="flex justify-between text-sm font-black text-slate-800 border-t border-slate-100 pt-2">
+                <div className="flex justify-between text-xs font-bold text-slate-700 border-t border-slate-100 pt-2">
                   <span>Grand Total:</span>
-                  <span className="text-primary-dark">{formatPrice(selectedOrder.grandTotal)}</span>
+                  <span>{formatPrice(selectedOrder.grandTotal)}</span>
                 </div>
+                {selectedOrder.walletAmountUsed && selectedOrder.walletAmountUsed > 0 ? (
+                  <>
+                    <div className="flex justify-between text-xs text-slate-500">
+                      <span>Wallet Applied:</span>
+                      <span className="font-semibold text-slate-700">-{formatPrice(selectedOrder.walletAmountUsed)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm font-black text-slate-800 border-t border-slate-100 pt-2">
+                      <span>Net Payable:</span>
+                      <span className="text-primary-dark">{formatPrice(selectedOrder.grandTotal - selectedOrder.walletAmountUsed)}</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex justify-between text-sm font-black text-slate-800 border-t border-slate-100 pt-2">
+                    <span>Net Payable:</span>
+                    <span className="text-primary-dark">{formatPrice(selectedOrder.grandTotal)}</span>
+                  </div>
+                )}
               </div>
             </div>
 

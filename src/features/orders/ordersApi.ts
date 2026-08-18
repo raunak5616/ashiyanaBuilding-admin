@@ -36,6 +36,7 @@ export interface Order {
   status: 'pending' | 'approved' | 'dispatched' | 'delivered' | 'cancelled';
   shippingAddress: ShippingAddress;
   paymentMethod: 'cash' | 'online';
+  walletAmountUsed?: number;
   paymentStatus: 'pending' | 'paid' | 'refunded';
   notes: string;
   createdAt: string;
