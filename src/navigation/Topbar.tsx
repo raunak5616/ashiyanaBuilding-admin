@@ -6,7 +6,7 @@ import { toggleSidebar } from '@/store/uiSlice';
 import { toggleThemeMode } from '@/features/settings/settingsSlice';
 import { useAuth } from '@/hooks/useAuth';
 import { ROUTES } from '@/constants/routes';
-import { markAsRead, markAllAsRead, clearNotifications } from '@/store/notificationsSlice';
+import { useGetOrdersQuery } from '@/features/orders/ordersApi';
 import Breadcrumb from './Breadcrumb';
 
 // Import MUI Icons
@@ -29,11 +29,13 @@ export const Topbar: React.FC = () => {
   const { user, logout } = useAuth();
   const themeMode = useSelector((state: RootState) => state.settings.themeMode);
   const sidebarCollapsed = useSelector((state: RootState) => state.ui.sidebarCollapsed);
-  const { items: notifications } = useSelector((state: RootState) => state.notifications);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  // Poll for pending orders every 10 seconds to keep live notifications
+  const { data: pendingOrdersResponse } = useGetOrdersQuery({ status: 'pending' }, { pollingInterval: 10000 });
+  const pendingOrders = pendingOrdersResponse?.data || [];
+  const unreadCount = pendingOrders.length;
 
   const formatTime = (isoString: string) => {
     try {
@@ -103,89 +105,67 @@ export const Topbar: React.FC = () => {
                 className="fixed inset-0 z-10" 
                 onClick={() => setNotificationsOpen(false)}
               ></div>
-              <div className="absolute right-0 mt-2.5 w-80 max-w-[calc(100vw-32px)] rounded-2xl border border-slate-200 bg-white p-2.5 shadow-2xl ring-1 ring-black/5 z-20 animate-in fade-in slide-in-from-top-2 duration-150">
+              <div className="absolute right-0 mt-2.5 w-80 max-w-[calc(100vw-32px)] rounded-2xl border border-slate-200 bg-white dark:bg-slate-800 dark:border-slate-700 p-2.5 shadow-2xl ring-1 ring-black/5 z-20 animate-in fade-in slide-in-from-top-2 duration-150">
                 {/* Header */}
-                <div className="flex items-center justify-between px-2 py-1.5 border-b border-slate-100 select-none mb-1">
-                  <span className="text-xs font-black text-secondary font-heading">
-                    Notifications
+                <div className="flex items-center justify-between px-2 py-1.5 border-b border-slate-100 dark:border-slate-700 select-none mb-1">
+                  <span className="text-xs font-black text-secondary dark:text-white font-heading">
+                    Pending Orders
                   </span>
                   {unreadCount > 0 && (
-                    <button
-                      onClick={() => dispatch(markAllAsRead())}
-                      className="text-[10px] font-bold text-primary hover:underline bg-transparent border-0 cursor-pointer"
-                    >
-                      Mark all as read
-                    </button>
+                    <span className="text-[10px] font-bold text-amber-500 font-sans">
+                      {unreadCount} action required
+                    </span>
                   )}
                 </div>
 
                 {/* List */}
-                <div className="max-h-64 overflow-y-auto py-1 divide-y divide-slate-100/50 scrollbar-none">
-                  {notifications.length > 0 ? (
-                    notifications.map((item) => (
-                      <div
+                <div className="max-h-64 overflow-y-auto py-1 divide-y divide-slate-100/50 dark:divide-slate-700/50 scrollbar-none">
+                  {pendingOrders.length > 0 ? (
+                    pendingOrders.map((item) => (
+                      <Link
                         key={item.id}
-                        onClick={() => {
-                          dispatch(markAsRead(item.id));
-                          if (item.id === 'welcome-notification') {
-                            setNotificationsOpen(false);
-                          }
-                        }}
-                        className={`flex gap-3 p-2 rounded-xl transition-colors cursor-pointer select-none my-0.5 ${
-                          item.isRead ? 'hover:bg-slate-50/50' : 'bg-slate-50/40 hover:bg-slate-50'
-                        }`}
+                        to={ROUTES.ORDERS}
+                        onClick={() => setNotificationsOpen(false)}
+                        className="flex gap-3 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer select-none my-0.5"
                       >
-                        {/* Icon based on Type */}
-                        <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 border ${
-                          item.type === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
-                          item.type === 'warning' ? 'bg-amber-50 border-amber-100 text-amber-600' :
-                          item.type === 'error' ? 'bg-rose-50 border-rose-100 text-rose-600' :
-                          'bg-sky-50 border-sky-100 text-sky-600'
-                        }`}>
-                          {item.type === 'success' ? <CheckCircleIcon className="!h-4.5 !w-4.5" /> :
-                           item.type === 'warning' ? <WarningIcon className="!h-4.5 !w-4.5" /> :
-                           item.type === 'error' ? <ErrorIcon className="!h-4.5 !w-4.5" /> :
-                           <InfoIcon className="!h-4.5 !w-4.5" />}
+                        {/* Warning Icon Badge */}
+                        <div className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 border bg-amber-50 border-amber-100 text-amber-600 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-400">
+                          <WarningIcon className="!h-4.5 !w-4.5" />
                         </div>
                         {/* Info */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
-                            <p className={`text-xs font-bold truncate leading-tight ${item.isRead ? 'text-slate-700' : 'text-slate-900'}`}>
-                              {item.title}
+                            <p className="text-xs font-bold truncate leading-tight text-slate-900 dark:text-slate-100">
+                              Order #{item.orderNumber}
                             </p>
                             <span className="text-[9px] text-slate-400 font-sans shrink-0">
-                              {formatTime(item.timestamp)}
+                              {formatTime(item.createdAt)}
                             </span>
                           </div>
-                          <p className="text-[10px] text-slate-500 font-sans mt-0.5 leading-relaxed break-words">
-                            {item.message}
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-sans mt-0.5 leading-relaxed break-words">
+                            Placed by {item.customerUserId?.fullName || 'Customer'} - Total: ₹{Math.round(item.grandTotal / 100)}
                           </p>
                         </div>
-                      </div>
+                      </Link>
                     ))
                   ) : (
                     <div className="py-8 text-center select-none">
-                      <p className="text-xs font-bold text-slate-400 font-sans">No new notifications</p>
-                      <p className="text-[10px] text-slate-300 font-sans mt-0.5">We will notify you here when events happen</p>
+                      <p className="text-xs font-bold text-slate-400 dark:text-slate-500 font-sans">No pending live orders</p>
+                      <p className="text-[10px] text-slate-300 dark:text-slate-600 font-sans mt-0.5">Pending checkout requests will appear here</p>
                     </div>
                   )}
                 </div>
 
                 {/* Footer */}
-                {notifications.length > 0 && (
-                  <div className="flex justify-end pt-1.5 border-t border-slate-100 select-none mt-1">
-                    <button
-                      onClick={() => {
-                        dispatch(clearNotifications());
-                        setNotificationsOpen(false);
-                      }}
-                      className="flex items-center gap-1 text-[10px] font-bold text-rose-600 hover:text-rose-700 bg-transparent border-0 cursor-pointer px-2 py-1 hover:bg-rose-50 rounded-lg transition-colors"
-                    >
-                      <DeleteSweepIcon className="!h-3.5 !w-3.5" />
-                      Clear all
-                    </button>
-                  </div>
-                )}
+                <div className="flex justify-center pt-1.5 border-t border-slate-100 dark:border-slate-700 select-none mt-1">
+                  <Link
+                    to={ROUTES.ORDERS}
+                    onClick={() => setNotificationsOpen(false)}
+                    className="text-[10px] font-bold text-primary hover:underline"
+                  >
+                    View All Orders
+                  </Link>
+                </div>
               </div>
             </>
           )}
