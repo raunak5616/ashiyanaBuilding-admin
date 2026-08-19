@@ -240,9 +240,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 type="text"
                 placeholder="e.g. 8901234567890"
                 disabled={loading}
-                className={`w-full px-4 py-2.5 text-sm border rounded-xl font-sans focus:outline-none focus:ring-1 transition-all duration-200 bg-slate-50 border-slate-200/80 text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:ring-slate-400 ${
-                  errors.barcode ? '!border-rose-500 focus:!ring-rose-500' : ''
-                }`}
+                className={`w-full px-4 py-2.5 text-sm border rounded-xl font-sans focus:outline-none focus:ring-1 transition-all duration-200 bg-slate-50 border-slate-200/80 text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:ring-slate-400 ${errors.barcode ? '!border-rose-500 focus:!ring-rose-500' : ''
+                  }`}
                 {...register('barcode')}
               />
               {errors.barcode && (
@@ -320,7 +319,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                     <MenuItem value="" className="!text-xs !font-sans text-slate-400">
                       Select Brand...
                     </MenuItem>
-                    {filteredBrands.map((br) => (
+                    {brands.map((br) => (
                       <MenuItem key={br.id} value={br.id} className="!text-xs !font-sans">
                         {br.name}
                       </MenuItem>
