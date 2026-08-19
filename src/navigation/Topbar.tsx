@@ -18,11 +18,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircleOutlined';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import SettingsIcon from '@mui/icons-material/SettingsOutlined';
 import LogoutIcon from '@mui/icons-material/LogoutOutlined';
-import InfoIcon from '@mui/icons-material/InfoOutlined';
-import CheckCircleIcon from '@mui/icons-material/CheckCircleOutlined';
 import WarningIcon from '@mui/icons-material/WarningAmberOutlined';
-import ErrorIcon from '@mui/icons-material/ErrorOutlined';
-import DeleteSweepIcon from '@mui/icons-material/DeleteSweepOutlined';
 
 export const Topbar: React.FC = () => {
   const dispatch = useDispatch();
