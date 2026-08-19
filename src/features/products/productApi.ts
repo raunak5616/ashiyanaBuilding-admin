@@ -263,13 +263,14 @@ export const productApi = apiSlice.injectEndpoints({
     }),
 
     // ---- BRANDS ----
-    getBrands: builder.query<ApiResponse<Brand[]>, { isActive?: boolean } | void>({
+    getBrands: builder.query<ApiResponse<Brand[]>, { isActive?: boolean; categoryId?: string } | void>({
       query: (params) => ({
         url: '/brands',
         method: 'GET',
         params: params ? {
           ...params,
           isActive: params.isActive !== undefined ? String(params.isActive) : undefined,
+          categoryId: params.categoryId || undefined,
         } : undefined,
       }),
       providesTags: (result) =>

@@ -1,19 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-
-const CATEGORY_BRAND_MAP: Record<string, string[]> = {
-  'Cement': ['Ultratech', 'Ambuja'],
-  'Tiling': ['Kajaria'],
-  'Painting': ['Asian Paints'],
-  'Water Proofing': ['Dr. Fixit'],
-  'Plywood & MDF': ['CenturyPly'],
-  'Wires & Cables': ['Polycab', 'Finolex'],
-  'Switches & Sockets': ['Havells'],
-  'Door Locks': ['Godrej'],
-  'CPVC Pipes': ['Astral'],
-};
 import FormInput from '@/components/common/FormInput';
 import PrimaryButton from '@/components/common/PrimaryButton';
 import SecondaryButton from '@/components/common/SecondaryButton';
@@ -105,16 +93,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     }, 150);
   };
 
-  // Queries for selectors
-  const { data: categoriesResponse } = useGetCategoriesQuery({ isActive: true });
-  const { data: brandsResponse } = useGetBrandsQuery({ isActive: true });
-  const { data: unitsResponse } = useGetUnitsQuery({ isActive: true });
-
-  const categories = categoriesResponse?.data || [];
-  const brands = brandsResponse?.data || [];
-  const units = unitsResponse?.data || [];
-
-  // Form initialization
+  // Form initialization (needed first to watch categoryId)
   const {
     register,
     handleSubmit,
@@ -145,33 +124,29 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
   const selectedCategoryId = watch('categoryId');
 
-  // Filter brands based on category selection
-  const filteredBrands = useMemo(() => {
-    if (!selectedCategoryId) return brands;
-    const category = categories.find((cat) => cat.id === selectedCategoryId);
-    if (!category) return brands;
+  // Queries for selectors
+  const { data: categoriesResponse } = useGetCategoriesQuery({ isActive: true });
+  const { data: brandsResponse } = useGetBrandsQuery({
+    isActive: true,
+    categoryId: selectedCategoryId || undefined,
+  });
+  const { data: unitsResponse } = useGetUnitsQuery({ isActive: true });
 
-    const categoryName = category.name.trim();
-    const matchedKey = Object.keys(CATEGORY_BRAND_MAP).find(
-      (key) => key.toLowerCase() === categoryName.toLowerCase()
-    );
-    const brandNames = matchedKey ? CATEGORY_BRAND_MAP[matchedKey] : undefined;
-    if (!brandNames) return brands;
+  const categories = categoriesResponse?.data || [];
+  const brands = brandsResponse?.data || [];
+  const units = unitsResponse?.data || [];
 
-    return brands.filter((br) => brandNames.includes(br.name));
-  }, [selectedCategoryId, categories, brands]);
-
-  // Clear brand selection if it is not valid for the new category selection
+  // Clear brand selection if it is no longer valid for the updated category
   useEffect(() => {
     if (!selectedCategoryId) return;
     const currentBrandId = getValues('brandId');
-    if (currentBrandId && filteredBrands.length > 0) {
-      const isValid = filteredBrands.some((br) => br.id === currentBrandId);
+    if (currentBrandId && brands.length > 0) {
+      const isValid = brands.some((br) => br.id === currentBrandId);
       if (!isValid) {
         setValue('brandId', '');
       }
     }
-  }, [selectedCategoryId, filteredBrands, setValue, getValues]);
+  }, [selectedCategoryId, brands, setValue, getValues]);
 
   // Populate data when in edit mode
   useEffect(() => {
