@@ -142,7 +142,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       // Translate paise to Rupees
       setValue('sellingPrice', product.sellingPrice ? product.sellingPrice / 100 : 0);
       setValue('purchasePrice', product.purchasePrice ? product.purchasePrice / 100 : 0);
-      setValue('mrp', product.sellingPrice ? product.sellingPrice / 100 : 0);
+      setValue('mrp', product.mrp ? product.mrp / 100 : (product.sellingPrice ? product.sellingPrice / 100 : 0));
       setValue('taxRate', product.taxRate !== undefined ? product.taxRate : 18);
       setValue('minimumStock', product.minimumStock || 0);
       setValue('images', product.images || []);
@@ -160,6 +160,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       unitId: data.unitId,
       description: data.description || undefined,
       sellingPrice: Math.round(data.sellingPrice * 100),
+      mrp: data.mrp !== undefined && data.mrp !== null ? Math.round(data.mrp * 100) : undefined,
       purchasePrice: Math.round(data.purchasePrice * 100),
       taxRate: data.taxRate,
       minimumStock: data.minimumStock,

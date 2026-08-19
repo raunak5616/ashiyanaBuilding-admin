@@ -28,6 +28,7 @@ export interface Product {
   unitId: string;
   description?: string;
   sellingPrice: number; // stored in paise on backend
+  mrp?: number; // stored in paise on backend
   purchasePrice: number; // stored in paise on backend
   taxRate: number;
   minimumStock: number;
