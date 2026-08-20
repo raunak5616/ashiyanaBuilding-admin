@@ -142,7 +142,7 @@ export const OrderListScreen: React.FC = () => {
         await deliverOrder(orderId).unwrap();
       }
       // If modal is open, refresh detail info
-      if (selectedOrder && selectedOrder.id === orderId) {
+      if (selectedOrder && (selectedOrder.id || selectedOrder._id) === orderId) {
         handleCloseDetails();
       }
     } catch (err: any) {
@@ -243,7 +243,7 @@ export const OrderListScreen: React.FC = () => {
                 ) : (
                   orders.map((order) => {
                     const totalQty = order.items.reduce((sum, item) => sum + item.quantity, 0);
-                    const orderId = order.id;
+                    const orderId = order.id || order._id;
 
                     return (
                       <TableRow key={orderId} className="hover:bg-slate-50/50">
@@ -510,7 +510,7 @@ export const OrderListScreen: React.FC = () => {
                     variant="contained"
                     startIcon={<DoneIcon />}
                     disabled={selectedOrder.paymentMethod === 'online' && selectedOrder.paymentStatus !== 'paid'}
-                    onClick={() => handleAction('approve', selectedOrder.id)}
+                    onClick={() => handleAction('approve', selectedOrder.id || selectedOrder._id || '')}
                     className="!bg-emerald-600 !text-white !text-xs !py-1.5 !px-4 !rounded-xl !font-bold disabled:!bg-slate-200 disabled:!text-slate-400"
                   >
                     {selectedOrder.paymentMethod === 'online' && selectedOrder.paymentStatus !== 'paid' ? 'Awaiting Payment' : 'Approve'}
@@ -519,7 +519,7 @@ export const OrderListScreen: React.FC = () => {
                     variant="contained"
                     color="error"
                     startIcon={<CloseIcon />}
-                    onClick={() => handleAction('reject', selectedOrder.id)}
+                    onClick={() => handleAction('reject', selectedOrder.id || selectedOrder._id || '')}
                     className="!text-white !text-xs !py-1.5 !px-4 !rounded-xl !font-bold"
                   >
                     Reject
@@ -531,7 +531,7 @@ export const OrderListScreen: React.FC = () => {
                 <Button
                   variant="contained"
                   startIcon={<LocalShippingIcon />}
-                  onClick={() => handleAction('dispatch', selectedOrder.id)}
+                  onClick={() => handleAction('dispatch', selectedOrder.id || selectedOrder._id || '')}
                   className="!bg-orange-600 !text-white !text-xs !py-1.5 !px-4 !rounded-xl !font-bold"
                 >
                   Dispatch
@@ -542,7 +542,7 @@ export const OrderListScreen: React.FC = () => {
                 <Button
                   variant="contained"
                   startIcon={<CheckCircleIcon />}
-                  onClick={() => handleAction('deliver', selectedOrder.id)}
+                  onClick={() => handleAction('deliver', selectedOrder.id || selectedOrder._id || '')}
                   className="!bg-emerald-600 !text-white !text-xs !py-1.5 !px-4 !rounded-xl !font-bold"
                 >
                   Mark Delivered

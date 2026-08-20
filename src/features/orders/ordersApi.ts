@@ -22,6 +22,7 @@ export interface ShippingAddress {
 
 export interface Order {
   id: string;
+  _id?: string;
   orderNumber: string;
   customerUserId: {
     id: string;
@@ -61,7 +62,7 @@ export const ordersApi = apiSlice.injectEndpoints({
       providesTags: (result) =>
         result?.data
           ? [
-              ...result.data.map(({ id }) => ({ type: 'Order' as const, id })),
+              ...result.data.map((order) => ({ type: 'Order' as const, id: order.id || order._id || '' })),
               { type: 'Order' as const, id: 'LIST' },
             ]
           : [{ type: 'Order' as const, id: 'LIST' }],
